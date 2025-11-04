@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Article - NewsHub</title>
+    <!-- Uploadcare Widget -->
+    <script>
+        UPLOADCARE_PUBLIC_KEY = "demopublickey"; // Replace with your actual Uploadcare public key
+    </script>
+    <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js" charset="utf-8"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css?family=Playfair+Display:400,700,900|Rubik:300,400,700" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/animate.css">
+    <link rel="stylesheet" href="css/owl.carousel.min.css">
+
+    <link rel="stylesheet" href="fonts/ionicons/css/ionicons.min.css">
+    <link rel="stylesheet" href="fonts/fontawesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/magnific-popup.css">
+
+    <!-- Theme Style -->
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Create Article Form */
+        .create-article-form {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            margin: 40px 0;
+        }
+
+        .create-article-form h2 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            text-align: center;
+            color: var(--dark-color);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .form-group textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        /* Image Upload Styles */
+        .image-upload-container {
+            margin-bottom: 20px;
+        }
+
+        .image-upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+
+        .image-upload-area:hover {
+            border-color: var(--primary-color);
+            background: #f0f7ff;
+        }
+
+        .image-upload-area i {
+            font-size: 48px;
+            color: var(--gray-color);
+            margin-bottom: 15px;
+        }
+
+        .image-upload-area.dragover {
+            border-color: var(--primary-color);
+            background: #e3f2fd;
+        }
+
+        .image-preview {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        .remove-image {
+            margin-top: 10px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .upload-text {
+            color: var(--gray-color);
+            margin-bottom: 10px;
+        }
+
+        .upload-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: var(--primary-color);
+        }
+
+        .success-message {
+            display: none;
+            background: var(--secondary-color);
+            color: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Uploadcare Widget Customization */
+        .uploadcare-widget-button {
+            background: var(--primary-color) !important;
+            padding: 10px 20px !important;
+            border-radius: 4px !important;
+            font-size: 1rem !important;
+        }
+
+        .uploadcare-widget-dialog {
+            z-index: 1050 !important;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .create-article-form {
+                padding: 20px;
+                margin: 20px 0;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .auth-buttons {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .image-upload-area {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Content -->
+    <main class="container">
+        <div class="success-message" id="successMessage">
+            Article published successfully! Redirecting to articles page...
+        </div>
+
+        <section class="create-article-form">
+            <h2>Create New Article</h2>
+            <form id="articleForm">
+                <div class="form-group">
+                    <label for="articleTitle">Title *</label>
+                    <input type="text" id="articleTitle" required placeholder="Enter article title">
+                </div>
+
+                <div class="form-group">
+                    <label for="articleCategory">Category *</label>
+                    <select id="articleCategory" required>
+                        <option value="">Select a category</option>
+                        <option value="Price">Price</option>
+                        <option value="Bar/Lounge">Bar/Lounge</option>
+                        <option value="Apartments">Apartments</option>
+                        <option value="Gym">Gym</option>
+                        <option value="Entertainment">Entertainment</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Article Image</label>
+                    <div class="image-upload-container">
+                        <input type="hidden" role="uploadcare-uploader" name="content" id="imageUpload" data-public-key="demopublickey" data-images-only="true" data-crop="free" />
+                        <div class="image-preview" id="imagePreview">
+                            <img id="previewImage" src="" alt="Preview">
+                            <button type="button" class="remove-image" onclick="removeImage()">Remove Image</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="articleContent">Content *</label>
+                    <textarea id="articleContent" required placeholder="Write your article content here..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="authorName">Author Name *</label>
+                    <input type="text" id="authorName" required placeholder="Enter your name">
+                </div>
+
+                <div class="loading" id="loadingIndicator">
+                    <i class="fas fa-spinner fa-spin"></i> Publishing article...
+                </div>
+
+                <div class="form-actions">
+                    <a href="test.html" class="btn btn-outline">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Publish Article</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCGW_T8O3bOhCFgabacKwfXPHDQHjPOwwE",
+            authDomain: "oceanwindsroyalapartment.firebaseapp.com",
+            projectId: "oceanwindsroyalapartment",
+            storageBucket: "oceanwindsroyalapartment.firebasestorage.app",
+            messagingSenderId: "402432791417",
+            appId: "1:402432791417:web:14dcaa0251e07525a455a8",
+            measurementId: "G-FLVGYSB847"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        // DOM Elements
+        const articleForm = document.getElementById('articleForm');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const successMessage = document.getElementById('successMessage');
+
+        // Image upload variables
+        let uploadedImageUrl = null;
+        let uploadcareWidget = null;
+
+        // Initialize Uploadcare Widget
+        function initializeUploadcare() {
+            uploadcareWidget = uploadcare.Widget('[role=uploadcare-uploader]');
+            
+            uploadcareWidget.onUploadComplete(function(fileInfo) {
+                // Get the uploaded image URL
+                uploadedImageUrl = fileInfo.cdnUrl;
+                
+                // Show preview
+                document.getElementById('previewImage').src = uploadedImageUrl;
+                document.getElementById('imagePreview').style.display = 'block';
+            });
+            
+            uploadcareWidget.onChange(function(file) {
+                if (!file) {
+                    // User removed the image
+                    removeImage();
+                }
+            });
+        }
+
+        function removeImage() {
+            uploadedImageUrl = null;
+            document.getElementById('imagePreview').style.display = 'none';
+            if (uploadcareWidget) {
+                uploadcareWidget.value(null);
+            }
+        }
+
+        // Article Creation
+        articleForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('articleTitle').value;
+            const category = document.getElementById('articleCategory').value;
+            const content = document.getElementById('articleContent').value;
+            const authorName = document.getElementById('authorName').value;
+
+            // Show loading indicator
+            loadingIndicator.style.display = 'block';
+
+            try {
+                // Use Uploadcare image URL if available, otherwise use default image
+                const imageUrl = uploadedImageUrl || 'images/Oceanwinds logo.jpeg';
+
+                // Add article to Firestore
+                await db.collection('articles').add({
+                    title: title,
+                    category: category,
+                    imageUrl: imageUrl,
+                    content: content,
+                    authorName: authorName,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    views: 0
+                });
+
+                // Show success message
+                successMessage.style.display = 'block';
+                articleForm.reset();
+                removeImage();
+
+                // Redirect to articles page after 2 seconds
+                setTimeout(() => {
+                    window.location.href = 'https://www.oceanwindsroyalapartments.com.ng/articles-page.html';
+                }, 2000);
+
+            } catch (error) {
+                console.error('Error publishing article:', error);
+                alert('Error publishing article: ' + error.message);
+            } finally {
+                loadingIndicator.style.display = 'none';
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeUploadcare();
+        });
+    </script>
+    <script src="js/jquery-3.2.1.min.js"></script>
+    <script src="js/jquery-migrate-3.0.0.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/owl.carousel.min.js"></script>
+    <script src="js/jquery.waypoints.min.js"></script>
+    <script src="js/jquery.stellar.min.js"></script>
+
+    <script src="js/jquery.magnific-popup.min.js"></script>
+    <script src="js/magnific-popup-options.js"></script>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
