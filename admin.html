@@ -10,6 +10,12 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     
+    <!-- Uploadcare Widget -->
+    <script>
+      UPLOADCARE_PUBLIC_KEY = "27f384108cda03c9ea20"; // Replace with your actual key in production
+    </script>
+    <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js" charset="utf-8"></script>
+    
     <style>
         :root {
             --primary-color: #1a5276;
@@ -357,6 +363,64 @@
             display: flex;
             justify-content: flex-end;
             gap: 10px;
+        }
+        
+        /* Upload Tabs */
+        .upload-tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 15px;
+        }
+
+        .upload-tab-btn {
+            padding: 10px 15px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .upload-tab-btn.active {
+            border-bottom: 3px solid var(--secondary-color);
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+
+        .upload-tab-content {
+            display: none;
+        }
+
+        .upload-tab-content.active {
+            display: block;
+        }
+
+        /* Uploadcare Widget Customization */
+        .uploadcare-widget-button {
+            background: var(--primary-color) !important;
+            padding: 12px 20px !important;
+            border-radius: 4px !important;
+            font-weight: 500 !important;
+        }
+
+        .uploadcare-widget-button:hover {
+            background: #144a6d !important;
+        }
+
+        .uploadcare-widget-dragndrop-area {
+            border: 2px dashed var(--secondary-color) !important;
+            border-radius: 8px !important;
+            padding: 30px !important;
+            text-align: center !important;
+            background: #f8f9fa !important;
+            margin-top: 10px !important;
+        }
+
+        .uploadcare-widget-text {
+            color: var(--dark-color) !important;
+            font-size: 1rem !important;
         }
         
         /* Dashboard Cards */
@@ -805,19 +869,55 @@
                         <p>Preview</p>
                     </div>
                     
+                    <!-- Upload Tabs -->
+                    <div class="upload-tabs" style="margin-bottom: 20px;">
+                        <button type="button" class="upload-tab-btn active" data-tab="url-upload">Image URL</button>
+                        <button type="button" class="upload-tab-btn" data-tab="file-upload">Upload File</button>
+                    </div>
+                    
                     <div class="upload-options">
                         <!-- URL Upload Option -->
-                        <div class="upload-option active" id="upload-url-option">
-                            <i>🔗</i>
-                            <div class="upload-option-text">
-                                <h4>Use Image URL</h4>
-                                <p>Enter the URL of your profile picture</p>
+                        <div class="upload-tab-content active" id="url-upload">
+                            <div class="upload-option active">
+                                <i>🔗</i>
+                                <div class="upload-option-text">
+                                    <h4>Use Image URL</h4>
+                                    <p>Enter the URL of your profile picture</p>
+                                </div>
+                            </div>
+                            <input type="text" id="profile-url" class="url-input" placeholder="Paste image URL here">
+                            <div class="url-preview-container" id="url-preview-container" style="display: none;">
+                                <p>URL Preview:</p>
+                                <img id="url-preview" class="url-preview" src="" alt="URL Preview" style="max-height: 150px;">
                             </div>
                         </div>
-                        <input type="text" id="profile-url" class="url-input" placeholder="Paste image URL here">
-                        <div class="url-preview-container" id="url-preview-container" style="display: none;">
-                            <p>URL Preview:</p>
-                            <img id="url-preview" class="url-preview" src="" alt="URL Preview" style="max-height: 150px;">
+                        
+                        <!-- File Upload Option -->
+                        <div class="upload-tab-content" id="file-upload" style="display: none;">
+                            <div class="upload-option">
+                                <i>📁</i>
+                                <div class="upload-option-text">
+                                    <h4>Upload from Device</h4>
+                                    <p>Select an image from your computer or mobile device</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Uploadcare Widget Container -->
+                            <div id="uploadcare-container" style="margin-top: 15px;">
+                                <input type="hidden" id="uploadcare-file-url" role="uploadcare-uploader" 
+                                       data-images-only="true"
+                                       data-preview-step="true"
+                                       data-crop="1:1"
+                                       data-tabs="file camera url"
+                                       data-multiple="false">
+                                
+                                <div id="uploadcare-preview" style="display: none; text-align: center; margin-top: 15px;">
+                                    
+                                    <div style="margin-top: 10px;">
+                                        <button type="button" class="btn btn-outline" id="remove-uploadcare-file" style="font-size: 0.8rem;">Remove Image</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1101,6 +1201,116 @@
         let selectedFileUrl = null;
         let editingApartmentId = null;
 
+        // ===== UPLOADCARE INTEGRATION ===== //
+
+        // Initialize Uploadcare Widget
+        function initUploadcareWidget() {
+            const widget = uploadcare.Widget('[role="uploadcare-uploader"]');
+            
+            widget.onChange(function(file) {
+                if (file) {
+                    file.done(function(fileInfo) {
+                        // Store the uploaded file URL
+                        selectedFileUrl = fileInfo.cdnUrl;
+                        
+                        // Update preview
+                        document.getElementById('uploadcare-preview-img').src = selectedFileUrl;
+                        document.getElementById('uploadcare-preview').style.display = 'block';
+                        document.getElementById('profile-preview').src = selectedFileUrl;
+                        
+                        showAlert('Image uploaded successfully! You can now save your profile.');
+                    }).fail(function(error) {
+                        console.error('Uploadcare upload failed:', error);
+                        showAlert('Error uploading image. Please try again.', 'error');
+                    });
+                }
+            });
+        }
+
+        // Remove uploaded file
+        function removeUploadcareFile() {
+            selectedFileUrl = null;
+            document.getElementById('uploadcare-preview').style.display = 'none';
+            document.getElementById('uploadcare-file-url').value = '';
+            document.getElementById('profile-preview').src = userProfile.profilePicture;
+        }
+
+        // Switch between upload tabs
+        function setupUploadTabs() {
+            const tabBtns = document.querySelectorAll('.upload-tab-btn');
+            const tabContents = document.querySelectorAll('.upload-tab-content');
+            
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Update active tab button
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show corresponding tab content
+                    tabContents.forEach(content => {
+                        content.style.display = 'none';
+                        content.classList.remove('active');
+                    });
+                    
+                    const activeContent = document.getElementById(tabId);
+                    activeContent.style.display = 'block';
+                    activeContent.classList.add('active');
+                    
+                    // Reset file upload when switching to URL tab
+                    if (tabId === 'url-upload') {
+                        removeUploadcareFile();
+                    }
+                });
+            });
+        }
+
+        // Enhanced profile picture update function
+        async function updateProfilePicture(imageUrl) {
+            try {
+                // Show loading state
+                const btnText = saveProfile.querySelector('.btn-text');
+                const spinner = saveProfile.querySelector('.spinner');
+                btnText.textContent = 'Updating...';
+                spinner.style.display = 'inline-block';
+                saveProfile.disabled = true;
+
+                // Update user profile in Firestore
+                await db.collection('users').doc(currentUser.uid).update({
+                    profilePicture: imageUrl
+                });
+                
+                // Update user profile data
+                userProfile.profilePicture = imageUrl;
+                
+                // Update Firebase Auth user profile
+                await currentUser.updateProfile({
+                    photoURL: imageUrl
+                });
+                
+                // Update UI
+                updateUserDisplay();
+                
+                // Show success message
+                showAlert('Profile picture updated successfully!');
+                
+                // Close modal
+                closeProfileModal();
+                
+            } catch (error) {
+                console.error('Error updating profile picture:', error);
+                showAlert('Error updating profile picture', 'error');
+            } finally {
+                // Reset button state
+                const btnText = saveProfile.querySelector('.btn-text');
+                const spinner = saveProfile.querySelector('.spinner');
+                btnText.textContent = 'Save Changes';
+                spinner.style.display = 'none';
+                saveProfile.disabled = false;
+            }
+        }
+
         // Show alert message
         function showAlert(message, type = 'success') {
             const alert = document.createElement('div');
@@ -1222,57 +1432,26 @@
         function closeProfileModal() {
             profileModal.classList.remove('active');
             document.body.style.overflow = '';
-        }
-
-        // Update profile picture using URL
-        async function updateProfilePictureWithURL(imageUrl) {
-            try {
-                // Validate URL
-                if (!isValidImageUrl(imageUrl)) {
-                    showAlert('Please enter a valid image URL', 'error');
-                    return;
-                }
-
-                // Show loading state
-                const btnText = saveProfile.querySelector('.btn-text');
-                const spinner = saveProfile.querySelector('.spinner');
-                btnText.textContent = 'Updating...';
-                spinner.style.display = 'inline-block';
-                saveProfile.disabled = true;
-
-                // Update user profile in Firestore
-                await db.collection('users').doc(currentUser.uid).update({
-                    profilePicture: imageUrl
-                });
-                
-                // Update user profile data
-                userProfile.profilePicture = imageUrl;
-                
-                // Update Firebase Auth user profile
-                await currentUser.updateProfile({
-                    photoURL: imageUrl
-                });
-                
-                // Update UI
-                updateUserDisplay();
-                
-                // Show success message
-                showAlert('Profile picture updated successfully!');
-                
-                // Close modal
-                closeProfileModal();
-                
-            } catch (error) {
-                console.error('Error updating profile picture:', error);
-                showAlert('Error updating profile picture', 'error');
-            } finally {
-                // Reset button state
-                const btnText = saveProfile.querySelector('.btn-text');
-                const spinner = saveProfile.querySelector('.spinner');
-                btnText.textContent = 'Save Changes';
-                spinner.style.display = 'none';
-                saveProfile.disabled = false;
-            }
+            
+            // Reset uploadcare
+            removeUploadcareFile();
+            
+            // Reset to URL tab
+            document.querySelectorAll('.upload-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector('[data-tab="url-upload"]').classList.add('active');
+            
+            document.querySelectorAll('.upload-tab-content').forEach(content => {
+                content.style.display = 'none';
+                content.classList.remove('active');
+            });
+            document.getElementById('url-upload').style.display = 'block';
+            document.getElementById('url-upload').classList.add('active');
+            
+            // Reset URL input
+            profileUrl.value = '';
+            urlPreviewContainer.style.display = 'none';
         }
 
         // Validate image URL
@@ -1590,11 +1769,20 @@
         
         // Save profile picture
         saveProfile.addEventListener('click', function() {
-            const imageUrl = profileUrl.value.trim();
-            if (imageUrl) {
-                updateProfilePictureWithURL(imageUrl);
+            // Check if we have a file from Uploadcare
+            if (selectedFileUrl) {
+                updateProfilePicture(selectedFileUrl);
+            } 
+            // Otherwise check if we have a URL
+            else if (profileUrl.value.trim()) {
+                const imageUrl = profileUrl.value.trim();
+                if (isValidImageUrl(imageUrl)) {
+                    updateProfilePicture(imageUrl);
+                } else {
+                    showAlert('Please enter a valid image URL', 'error');
+                }
             } else {
-                showAlert('Please enter an image URL', 'error');
+                showAlert('Please either upload an image or enter an image URL', 'error');
             }
         });
         
@@ -1726,6 +1914,12 @@
             loadApartments();
         });
 
+        // Uploadcare event listeners
+        document.getElementById('remove-uploadcare-file').addEventListener('click', function(e) {
+            e.preventDefault();
+            removeUploadcareFile();
+        });
+
         // Form submissions
         apartmentForm.addEventListener('submit', handleApartmentFormSubmit);
 
@@ -1738,6 +1932,8 @@
         // Initialize the sidebar on page load
         function initApp() {
             initSidebar();
+            initUploadcareWidget(); // Add this line
+            setupUploadTabs(); // Add this line
         }
 
         // Start the application
