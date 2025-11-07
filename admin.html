@@ -9,12 +9,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <!-- UploadCare Widget -->
-    <script>
-        UPLOADCARE_PUBLIC_KEY = "demopublickey"; // Replace with your actual key
-    </script>
-    <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js" charset="utf-8"></script>
-    <link rel="stylesheet" href="https://ucarecdn.com/libs/widget/3.x/uploadcare.min.css" type="text/css">
     
     <style>
         :root {
@@ -357,18 +351,6 @@
             outline: none;
         }
         
-        .uploadcare-widget {
-            width: 100%;
-            margin-top: 10px;
-        }
-        
-        .uploadcare-widget-button {
-            background: var(--primary-color) !important;
-            color: white !important;
-            border-radius: 4px !important;
-            padding: 10px 15px !important;
-        }
-        
         .modal-footer {
             padding: 15px 20px;
             background: #f8f9fa;
@@ -391,6 +373,7 @@
             padding: 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s;
+            cursor: pointer;
         }
         
         .card:hover {
@@ -785,17 +768,18 @@
                         <i>🏠</i>
                         <span class="menu-text">Apartments</span>
                     </a></li>
-                    <li><a href="#" data-tab="gallery">
+                    <!-- <li><a href="#" data-tab="gallery">
                         <i>🖼️</i>
                         <span class="menu-text">Gallery</span>
                     </a></li>
                     <li><a href="#" data-tab="amenities">
                         <i>⭐</i>
                         <span class="menu-text">Amenities</span>
-                    </a></li>
-                    <li><a href="#" data-tab="testimonials">
+                    </a></li> -->
+                    <!-- Updated Testimonials link to redirect to create-article.html -->
+                    <li><a href="create-article.html">
                         <i>💬</i>
-                        <span class="menu-text">Testimonials</span>
+                        <span class="menu-text">Blog</span>
                     </a></li>
                     <li><a href="#" id="logout-btn">
                         <i>🚪</i> 
@@ -822,27 +806,15 @@
                     </div>
                     
                     <div class="upload-options">
-                        <!-- UploadCare Widget Option -->
-                        <div class="upload-option active" id="upload-widget-option">
-                            <i>📁</i>
-                            <div class="upload-option-text">
-                                <h4>Upload from device</h4>
-                                <p>Select an image using UploadCare widget</p>
-                            </div>
-                        </div>
-                        <div id="uploadcare-widget-container">
-                            <!-- UploadCare widget will be inserted here -->
-                        </div>
-                        
                         <!-- URL Upload Option -->
-                        <div class="upload-option" id="upload-url-option">
+                        <div class="upload-option active" id="upload-url-option">
                             <i>🔗</i>
                             <div class="upload-option-text">
                                 <h4>Use Image URL</h4>
                                 <p>Enter the URL of your profile picture</p>
                             </div>
                         </div>
-                        <input type="text" id="profile-url" class="url-input" placeholder="Paste image URL here" style="display: none;">
+                        <input type="text" id="profile-url" class="url-input" placeholder="Paste image URL here">
                         <div class="url-preview-container" id="url-preview-container" style="display: none;">
                             <p>URL Preview:</p>
                             <img id="url-preview" class="url-preview" src="" alt="URL Preview" style="max-height: 150px;">
@@ -913,12 +885,12 @@
             <!-- Dashboard Tab -->
             <div id="dashboard" class="tab-content active">
                 <div class="dashboard-cards">
-                    <div class="card">
+                    <div class="card" id="apartments-card">
                         <div class="card-icon">🏠</div>
                         <h3>Apartments</h3>
-                        <p>Manage apartment listings and details</p>
+                        <p>Update apartment listings and details</p>
                     </div>
-                    <div class="card">
+                    <!-- <div class="card">
                         <div class="card-icon">🖼️</div>
                         <h3>Gallery</h3>
                         <p>Upload and manage property images</p>
@@ -927,7 +899,7 @@
                         <div class="card-icon">⭐</div>
                         <h3>Amenities</h3>
                         <p>Update property amenities and features</p>
-                    </div>
+                    </div> -->
                     <a href="create-article.html" style="text-decoration: none;">
                         <div class="card">
                             <div class="card-icon">💬</div>
@@ -942,14 +914,14 @@
             <div id="apartments" class="tab-content">
                 <div class="tabs">
                     <div class="tab active" data-subtab="apartment-list">Apartment List</div>
-                    <div class="tab" data-subtab="add-apartment">Add New Apartment</div>
+                    <div class="tab" data-subtab="update-apartment">Update Apartment</div>
                 </div>
                 
                 <div id="apartment-list" class="subtab-content active">
                     <div class="content-list">
                         <div class="content-list-header">
                             <h3>All Apartments</h3>
-                            <button class="btn btn-primary" id="add-apartment-btn">Add New Apartment</button>
+                            <button class="btn btn-primary" id="update-apartment-btn">Update Apartment</button>
                         </div>
                         <table class="table">
                             <thead>
@@ -962,85 +934,49 @@
                                     <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>APT001</td>
-                                    <td>Ocean View Suite</td>
-                                    <td>2 Bedroom</td>
-                                    <td>₦250,000/month</td>
-                                    <td><span style="color: var(--success-color);">Available</span></td>
-                                    <td class="action-buttons">
-                                        <button class="action-btn edit-btn">Edit</button>
-                                        <button class="action-btn delete-btn">Delete</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>APT002</td>
-                                    <td>Executive Apartment</td>
-                                    <td>3 Bedroom</td>
-                                    <td>₦350,000/month</td>
-                                    <td><span style="color: var(--success-color);">Available</span></td>
-                                    <td class="action-buttons">
-                                        <button class="action-btn edit-btn">Edit</button>
-                                        <button class="action-btn delete-btn">Delete</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>APT003</td>
-                                    <td>Standard Studio</td>
-                                    <td>Studio</td>
-                                    <td>₦180,000/month</td>
-                                    <td><span style="color: var(--danger-color);">Occupied</span></td>
-                                    <td class="action-buttons">
-                                        <button class="action-btn edit-btn">Edit</button>
-                                        <button class="action-btn delete-btn">Delete</button>
-                                    </td>
-                                </tr>
+                            <tbody id="apartments-table-body">
+                                <!-- Apartments will be loaded here dynamically -->
                             </tbody>
                         </table>
                     </div>
                 </div>
                 
-                <div id="add-apartment" class="subtab-content">
+                <div id="update-apartment" class="subtab-content">
                     <div class="form-container">
-                        <h2>Add New Apartment</h2>
+                        <h2 id="form-title">Update Apartment</h2>
                         <form id="apartment-form">
+                            <input type="hidden" id="apartment-id">
                             <div class="form-group">
                                 <label for="apartment-name">Apartment Name</label>
-                                <input type="text" id="apartment-name" class="form-control" placeholder="Enter apartment name">
+                                <input type="text" id="apartment-name" class="form-control" placeholder="Enter apartment name" required>
                             </div>
                             <div class="form-group">
                                 <label for="apartment-type">Apartment Type</label>
-                                <select id="apartment-type" class="form-control">
+                                <select id="apartment-type" class="form-control" required>
                                     <option value="">Select type</option>
-                                    <option value="studio">Studio</option>
+                                    <option value="self-contained">Self Contained</option>
                                     <option value="1-bedroom">1 Bedroom</option>
                                     <option value="2-bedroom">2 Bedroom</option>
-                                    <option value="3-bedroom">3 Bedroom</option>
-                                    <option value="penthouse">Penthouse</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label for="apartment-price">Price (₦)</label>
-                                <input type="number" id="apartment-price" class="form-control" placeholder="Enter monthly price">
+                                <input type="number" id="apartment-price" class="form-control" placeholder="Enter monthly price" required>
                             </div>
                             <div class="form-group">
                                 <label for="apartment-description">Description</label>
-                                <textarea id="apartment-description" class="form-control" placeholder="Enter apartment description"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="apartment-images">Apartment Images</label>
-                                <div id="apartment-images-widget"></div>
+                                <textarea id="apartment-description" class="form-control" placeholder="Enter apartment description" required></textarea>
                             </div>
                             <div class="form-group">
                                 <label for="apartment-status">Status</label>
-                                <select id="apartment-status" class="form-control">
+                                <select id="apartment-status" class="form-control" required>
                                     <option value="available">Available</option>
                                     <option value="occupied">Occupied</option>
                                     <option value="maintenance">Under Maintenance</option>
                                 </select>
                             </div>
-                            <button type="submit" class="btn btn-success">Add Apartment</button>
+                            <button type="submit" class="btn btn-success">Save</button>
+                            <button type="button" class="btn btn-outline" id="cancel-update" style="display: none;">Cancel</button>
                         </form>
                     </div>
                 </div>
@@ -1053,7 +989,7 @@
                     <form id="gallery-form">
                         <div class="form-group">
                             <label for="gallery-images">Select Images</label>
-                            <div id="gallery-images-widget"></div>
+                            <input type="file" id="gallery-images" class="form-control" multiple>
                         </div>
                         <div class="form-group">
                             <label for="gallery-category">Category</label>
@@ -1121,11 +1057,6 @@
             measurementId: "G-FLVGYSB847"
         };
 
-        // UploadCare Configuration - REPLACE WITH YOUR ACTUAL KEY
-        const UPLOADCARE_CONFIG = {
-            publicKey: "27f384108cda03c9ea20" // Replace with your actual UploadCare public key
-        };
-
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
@@ -1147,8 +1078,6 @@
         const saveProfileInfo = document.getElementById('save-profile-info');
         const changeProfilePic = document.getElementById('change-profile-pic');
         const editProfile = document.getElementById('edit-profile');
-        const uploadWidgetOption = document.getElementById('upload-widget-option');
-        const uploadUrlOption = document.getElementById('upload-url-option');
         const profileUrl = document.getElementById('profile-url');
         const profilePreview = document.getElementById('profile-preview');
         const currentProfilePic = document.getElementById('current-profile-pic');
@@ -1159,14 +1088,18 @@
         const alertContainer = document.getElementById('alert-container');
         const urlPreviewContainer = document.getElementById('url-preview-container');
         const urlPreview = document.getElementById('url-preview');
-        const uploadcareWidgetContainer = document.getElementById('uploadcare-widget-container');
+        const apartmentsCard = document.getElementById('apartments-card');
+        const updateApartmentBtn = document.getElementById('update-apartment-btn');
+        const cancelUpdateBtn = document.getElementById('cancel-update');
+        const apartmentForm = document.getElementById('apartment-form');
+        const formTitle = document.getElementById('form-title');
+        const apartmentsTableBody = document.getElementById('apartments-table-body');
 
         // Current user data
         let currentUser = null;
         let userProfile = null;
-        let currentUploadMethod = 'widget'; // 'widget' or 'url'
-        let uploadcareWidget = null;
         let selectedFileUrl = null;
+        let editingApartmentId = null;
 
         // Show alert message
         function showAlert(message, type = 'success') {
@@ -1192,6 +1125,7 @@
             if (user) {
                 currentUser = user;
                 loadUserProfile();
+                loadApartments();
             } else {
                 window.location.href = 'index.html';
             }
@@ -1229,28 +1163,6 @@
             }
         }
 
-        // Initialize UploadCare widget
-        function initUploadCareWidget() {
-            if (uploadcareWidgetContainer && typeof uploadcare !== 'undefined') {
-                uploadcareWidget = uploadcare.Widget('[role=uploadcare-uploader]', {
-                    publicKey: UPLOADCARE_CONFIG.publicKey,
-                    multiple: false,
-                    imagesOnly: true,
-                    previewStep: true
-                });
-                
-                uploadcareWidget.onChange((file) => {
-                    if (file) {
-                        file.done((fileInfo) => {
-                            selectedFileUrl = fileInfo.cdnUrl;
-                            profilePreview.src = selectedFileUrl;
-                            showAlert('Image selected successfully!');
-                        });
-                    }
-                });
-            }
-        }
-
         // Check if device is mobile
         function isMobile() {
             return window.innerWidth <= 992;
@@ -1275,7 +1187,7 @@
         });
 
         // Close mobile sidebar when clicking on a menu item
-        document.querySelectorAll('.sidebar-menu a').forEach(link => {
+        document.querySelectorAll('.sidebar-menu a[data-tab]').forEach(link => {
             link.addEventListener('click', function() {
                 if (isMobile()) {
                     sidebar.classList.remove('mobile-open');
@@ -1305,95 +1217,11 @@
             profileUrl.value = '';
             selectedFileUrl = null;
             urlPreviewContainer.style.display = 'none';
-            
-            // Set default method
-            setUploadMethod('widget');
-            
-            // Initialize UploadCare widget when modal opens
-            setTimeout(() => {
-                initUploadCareWidget();
-            }, 100);
         }
 
         function closeProfileModal() {
             profileModal.classList.remove('active');
             document.body.style.overflow = '';
-            
-            // Reset widget
-            if (uploadcareWidget) {
-                uploadcareWidget.value(null);
-            }
-        }
-
-        // Set upload method (widget or URL)
-        function setUploadMethod(method) {
-            currentUploadMethod = method;
-            
-            if (method === 'widget') {
-                uploadWidgetOption.classList.add('active');
-                uploadUrlOption.classList.remove('active');
-                uploadcareWidgetContainer.style.display = 'block';
-                profileUrl.style.display = 'none';
-                urlPreviewContainer.style.display = 'none';
-                
-                // Create UploadCare widget HTML
-                uploadcareWidgetContainer.innerHTML = '<input type="hidden" role="uploadcare-uploader" />';
-            } else {
-                uploadWidgetOption.classList.remove('active');
-                uploadUrlOption.classList.add('active');
-                uploadcareWidgetContainer.style.display = 'none';
-                profileUrl.style.display = 'block';
-            }
-        }
-
-        // Update profile picture using UploadCare
-        async function updateProfilePictureWithUploadCare() {
-            try {
-                if (!selectedFileUrl) {
-                    showAlert('Please select an image using the upload widget', 'error');
-                    return;
-                }
-
-                // Show loading state
-                const btnText = saveProfile.querySelector('.btn-text');
-                const spinner = saveProfile.querySelector('.spinner');
-                btnText.textContent = 'Updating...';
-                spinner.style.display = 'inline-block';
-                saveProfile.disabled = true;
-
-                // Update user profile in Firestore
-                await db.collection('users').doc(currentUser.uid).update({
-                    profilePicture: selectedFileUrl
-                });
-                
-                // Update user profile data
-                userProfile.profilePicture = selectedFileUrl;
-                
-                // Update Firebase Auth user profile
-                await currentUser.updateProfile({
-                    photoURL: selectedFileUrl
-                });
-                
-                // Update UI
-                updateUserDisplay();
-                
-                // Show success message
-                showAlert('Profile picture updated successfully!');
-                
-                // Close modal
-                closeProfileModal();
-                
-            } catch (error) {
-                console.error('Error updating profile picture:', error);
-                showAlert('Error updating profile picture', 'error');
-            } finally {
-                // Reset button state
-                const btnText = saveProfile.querySelector('.btn-text');
-                const spinner = saveProfile.querySelector('.spinner');
-                btnText.textContent = 'Save Changes';
-                spinner.style.display = 'none';
-                saveProfile.disabled = false;
-            }
         }
 
         // Update profile picture using URL
@@ -1559,6 +1387,181 @@
             }
         }
 
+        // Load apartments from Firebase
+        async function loadApartments() {
+            try {
+                const apartmentsSnapshot = await db.collection('apartments').orderBy('createdAt', 'desc').get();
+                
+                if (apartmentsSnapshot.empty) {
+                    apartmentsTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 20px;">
+                                No apartments found. Add your first apartment!
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                let apartmentsHTML = '';
+                apartmentsSnapshot.forEach(doc => {
+                    const apartment = doc.data();
+                    const statusColor = apartment.status === 'available' ? 'var(--success-color)' : 
+                                      apartment.status === 'occupied' ? 'var(--danger-color)' : 
+                                      'var(--accent-color)';
+                    const statusText = apartment.status.charAt(0).toUpperCase() + apartment.status.slice(1);
+                    
+                    apartmentsHTML += `
+                        <tr>
+                            <td>${apartment.id}</td>
+                            <td>${apartment.name}</td>
+                            <td>${apartment.type}</td>
+                            <td>₦${apartment.price.toLocaleString()}/month</td>
+                            <td><span style="color: ${statusColor};">${statusText}</span></td>
+                            <td class="action-buttons">
+                                <button class="action-btn edit-btn" onclick="editApartment('${apartment.id}')">Edit</button>
+                                <button class="action-btn delete-btn" onclick="deleteApartment('${apartment.id}')">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                apartmentsTableBody.innerHTML = apartmentsHTML;
+                
+            } catch (error) {
+                console.error('Error loading apartments:', error);
+                showAlert('Error loading apartments', 'error');
+            }
+        }
+
+        // Handle apartment form submission
+        async function handleApartmentFormSubmit(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const apartmentName = document.getElementById('apartment-name').value;
+            const apartmentType = document.getElementById('apartment-type').value;
+            const apartmentPrice = document.getElementById('apartment-price').value;
+            const apartmentDescription = document.getElementById('apartment-description').value;
+            const apartmentStatus = document.getElementById('apartment-status').value;
+            
+            // Validate required fields
+            if (!apartmentName || !apartmentType || !apartmentPrice || !apartmentDescription) {
+                showAlert('Please fill in all required fields', 'error');
+                return;
+            }
+
+            try {
+                // Show loading state
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                submitBtn.innerHTML = '<span class="spinner"></span> Saving...';
+                submitBtn.disabled = true;
+
+                let apartmentData = {
+                    name: apartmentName,
+                    type: apartmentType,
+                    price: parseFloat(apartmentPrice),
+                    description: apartmentDescription,
+                    status: apartmentStatus,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                if (editingApartmentId) {
+                    // Update existing apartment
+                    await db.collection('apartments').doc(editingApartmentId).update(apartmentData);
+                    showAlert('Apartment updated successfully!');
+                } else {
+                    // Create new apartment
+                    const apartmentId = 'APT' + Date.now();
+                    apartmentData.id = apartmentId;
+                    apartmentData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                    
+                    await db.collection('apartments').doc(apartmentId).set(apartmentData);
+                    showAlert('Apartment added successfully!');
+                }
+                
+                // Reset form
+                resetApartmentForm();
+                
+                // Refresh apartment list
+                loadApartments();
+                
+                // Switch back to apartment list view
+                document.querySelector('[data-subtab="apartment-list"]').click();
+                
+            } catch (error) {
+                console.error('Error saving apartment:', error);
+                showAlert('Error saving apartment: ' + error.message, 'error');
+            } finally {
+                // Reset button state
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                submitBtn.textContent = 'Save';
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Edit apartment function
+        async function editApartment(apartmentId) {
+            try {
+                const doc = await db.collection('apartments').doc(apartmentId).get();
+                if (doc.exists) {
+                    const apartment = doc.data();
+                    
+                    // Populate form with apartment data
+                    document.getElementById('apartment-id').value = apartmentId;
+                    document.getElementById('apartment-name').value = apartment.name;
+                    document.getElementById('apartment-type').value = apartment.type;
+                    document.getElementById('apartment-price').value = apartment.price;
+                    document.getElementById('apartment-description').value = apartment.description;
+                    document.getElementById('apartment-status').value = apartment.status;
+                    
+                    // Set editing mode
+                    editingApartmentId = apartmentId;
+                    formTitle.textContent = 'Update Apartment';
+                    cancelUpdateBtn.style.display = 'inline-block';
+                    
+                    // Switch to update apartment tab
+                    document.querySelectorAll('.tab').forEach(tab => {
+                        tab.classList.remove('active');
+                    });
+                    document.querySelector('[data-subtab="update-apartment"]').classList.add('active');
+                    
+                    document.querySelectorAll('.subtab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById('update-apartment').classList.add('active');
+                    
+                    showAlert('Apartment loaded for editing');
+                }
+            } catch (error) {
+                console.error('Error loading apartment for editing:', error);
+                showAlert('Error loading apartment for editing', 'error');
+            }
+        }
+
+        // Delete apartment function
+        async function deleteApartment(apartmentId) {
+            if (confirm('Are you sure you want to delete this apartment?')) {
+                try {
+                    await db.collection('apartments').doc(apartmentId).delete();
+                    showAlert('Apartment deleted successfully!');
+                    loadApartments();
+                } catch (error) {
+                    console.error('Error deleting apartment:', error);
+                    showAlert('Error deleting apartment', 'error');
+                }
+            }
+        }
+
+        // Reset apartment form
+        function resetApartmentForm() {
+            document.getElementById('apartment-form').reset();
+            document.getElementById('apartment-id').value = '';
+            editingApartmentId = null;
+            formTitle.textContent = 'Update Apartment';
+            cancelUpdateBtn.style.display = 'none';
+        }
+
         // Event listeners for profile picture functionality
         changeProfilePic.addEventListener('click', function(e) {
             e.preventDefault();
@@ -1587,30 +1590,16 @@
         
         // Save profile picture
         saveProfile.addEventListener('click', function() {
-            if (currentUploadMethod === 'widget') {
-                updateProfilePictureWithUploadCare();
+            const imageUrl = profileUrl.value.trim();
+            if (imageUrl) {
+                updateProfilePictureWithURL(imageUrl);
             } else {
-                const imageUrl = profileUrl.value.trim();
-                if (imageUrl) {
-                    updateProfilePictureWithURL(imageUrl);
-                } else {
-                    showAlert('Please enter an image URL', 'error');
-                }
+                showAlert('Please enter an image URL', 'error');
             }
         });
         
         // Save profile info
         saveProfileInfo.addEventListener('click', updateUserProfile);
-
-        // Upload widget option
-        uploadWidgetOption.addEventListener('click', function() {
-            setUploadMethod('widget');
-        });
-
-        // Upload URL option
-        uploadUrlOption.addEventListener('click', function() {
-            setUploadMethod('url');
-        });
 
         // Preview image when URL changes
         profileUrl.addEventListener('input', function() {
@@ -1645,8 +1634,8 @@
             initSidebar();
         });
 
-        // Tab navigation
-        document.querySelectorAll('.sidebar-menu a').forEach(tab => {
+        // Tab navigation - Only apply to tabs with data-tab attribute
+        document.querySelectorAll('.sidebar-menu a[data-tab]').forEach(tab => {
             tab.addEventListener('click', function(e) {
                 e.preventDefault();
                 
@@ -1664,6 +1653,11 @@
                 document.getElementById(tabId).classList.add('active');
                 
                 document.querySelector('.header h1').textContent = this.querySelector('.menu-text').textContent.trim();
+                
+                // Load apartments when apartments tab is clicked
+                if (tabId === 'apartments') {
+                    loadApartments();
+                }
             });
         });
 
@@ -1685,25 +1679,55 @@
             });
         });
 
-        // Add apartment button
-        document.getElementById('add-apartment-btn').addEventListener('click', function() {
+        // Update apartment button
+        updateApartmentBtn.addEventListener('click', function() {
+            resetApartmentForm();
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
             });
-            document.querySelector('[data-subtab="add-apartment"]').classList.add('active');
+            document.querySelector('[data-subtab="update-apartment"]').classList.add('active');
             
             document.querySelectorAll('.subtab-content').forEach(content => {
                 content.classList.remove('active');
             });
-            document.getElementById('add-apartment').classList.add('active');
+            document.getElementById('update-apartment').classList.add('active');
+        });
+
+        // Cancel update button
+        cancelUpdateBtn.addEventListener('click', function() {
+            resetApartmentForm();
+        });
+
+        // Apartments card click
+        apartmentsCard.addEventListener('click', function() {
+            document.querySelectorAll('.sidebar-menu a').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector('[data-tab="apartments"]').classList.add('active');
+            
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById('apartments').classList.add('active');
+            
+            document.querySelector('.header h1').textContent = 'Apartments';
+            
+            // Switch to update apartment tab
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector('[data-subtab="update-apartment"]').classList.add('active');
+            
+            document.querySelectorAll('.subtab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById('update-apartment').classList.add('active');
+            
+            loadApartments();
         });
 
         // Form submissions
-        document.getElementById('apartment-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Apartment added successfully!');
-            this.reset();
-        });
+        apartmentForm.addEventListener('submit', handleApartmentFormSubmit);
 
         document.getElementById('gallery-form').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -1711,31 +1735,9 @@
             this.reset();
         });
 
-        // Initialize UploadCare widgets for other forms
-        function initOtherUploadCareWidgets() {
-            // Apartment images widget
-            if (document.getElementById('apartment-images-widget') && typeof uploadcare !== 'undefined') {
-                uploadcare.Widget('#apartment-images-widget', {
-                    publicKey: UPLOADCARE_CONFIG.publicKey,
-                    multiple: true,
-                    imagesOnly: true
-                });
-            }
-            
-            // Gallery images widget
-            if (document.getElementById('gallery-images-widget') && typeof uploadcare !== 'undefined') {
-                uploadcare.Widget('#gallery-images-widget', {
-                    publicKey: UPLOADCARE_CONFIG.publicKey,
-                    multiple: true,
-                    imagesOnly: true
-                });
-            }
-        }
-
-        // Initialize the sidebar and UploadCare widgets on page load
+        // Initialize the sidebar on page load
         function initApp() {
             initSidebar();
-            initOtherUploadCareWidgets();
         }
 
         // Start the application
